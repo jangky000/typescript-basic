@@ -9,6 +9,9 @@
 
 
 
+
+
+
 // # 인터페이스 기본 예제
 
 /**
@@ -29,8 +32,11 @@ function printLabel(labeledObj: LabeledValue) {
     console.log(labeledObj.label);
 }
 
-let myObj = {size: 10, label: "Size 10 Object"};
+let myObj = {size: 10, label: "Size 10 Object"}; // 참고. 초과 프로퍼티 검사를 피하는 방법
 printLabel(myObj);
+
+
+
 
 
 
@@ -71,6 +77,9 @@ let mySquare = createSquare({color: "black"});
 
 
 
+
+
+
 // # 읽기전용 프로퍼티를 포함한 인터페이스
 
 /**
@@ -105,25 +114,162 @@ a = ro as number[]; // 타입 단언(type assertion)으로 오버라이드하는
 
 
 
-// 초과 프로퍼티 검사 인터페이스
+
+
+
+// # 초과 프로퍼티 검사
 
 /**
  * 인터페이스의 첫 번째 기본 예제에서 { label: string; }을 기대해도 { size: number; label: string; }를 허용
+ * 객체 리터럴({num: 1} 등)은 다른 변수에 할당하거나 인수로 전달시, 특별한 처리를 받고, 초과 프로퍼티 검사를 받음
+ * 객체 리터럴이 대상타입이 가지고 있지 않은 프로퍼티를 가지고 있으면 에러 발생
  * 
  */
 
+interface SquareConfig1 {
+    color?: string;
+    width?: number;
+}
+
+function createSquare1(config: SquareConfig1): { color: string; area: number } {
+    return {color: '', area: 0};
+}
+
+// let mySquare1 = createSquare1({ colour: "red", width: 100 }); // 에러 <- colour는 초과 프로퍼티
+
+/**
+ * width 프로퍼티는 적합하고, 
+ * color 프로퍼티는 없고, 
+ * colour 프로퍼티는 초과 프로퍼티임 -> 에러 발생
+ */
+
+ /**
+  * 위 에러를 피하는 방법
+  * 1. 객체 리터럴에 타입 단언 사용
+  * 2. 인터페이스에 문자열 인덱스 서명 추가
+  * 3. 객체 리터럴을 다른 변수에 할당 후 사용(공통 프로퍼티가 있는 경우에만 사용 가능)
+  */
+
+// 1. 객체 리터럴에 타입 단언 사용
+let mySquare1 = createSquare({ width: 100, opacity: 0.5 } as SquareConfig);
+
+// 2. 인터페이스에 문자열 인덱스 서명 추가
+interface SquareConfig {
+    color?: string;
+    width?: number;
+    [propName: string]: any;
+}
+
+// 3. 객체 리터럴을 다른 변수에 할당 후 사용
+/**
+ * squareOptions가 추가 프로퍼티 검사를 받지 않음
+ * squareOptions와 SquareConfig 사이에 공통 프로퍼티가 있는 경우에만 위와 같은 방법을 사용할 수 있음
+ * 간단한 경우에는 이 방법을 사용하지 않는 것을 권장 -> 타입 정의를 수정하는 것이 바람직
+ */
+let squareOptions = { colour: "red", width: 100 };
+let mySquare2 = createSquare(squareOptions);
 
 
 
-//
 
 
 
 
 
-//
+// # 함수 타입을 정의한 인터페이스
+
+// 함수 타입 인터페이스 정의
+// function(source: string, subString: string): boolean {}
+interface SearchFunc {
+    (source: string, subString: string): boolean;
+}
+
+// 인터페이스 사용
+let mySearch: SearchFunc;
+mySearch = function(source: string, subString: string) {
+    let result = source.search(subString);
+    return result > -1;
+}
+
+/**
+ * 올바른 함수 타입 검사를 위해, 매개변수의 이름이 같을 필요는 없음
+ * 왜냐하면 함수 매개변수들은 같은 위치에 대응되는 매개변수끼리 한번에 하나씩 검사
+ * source, subString 대신 src, sub 등으로 사용 가능
+ */
+
+let mySearch1: SearchFunc;
+mySearch1 = function(src: string, sub: string): boolean {
+    let result = src.search(sub);
+    return result > -1;
+}
+
+// 타입 추론
+/**
+ * 함수 할당할 때 매개변수, return 타입 지정하지 않으면, 문맥상 타이핑으로 인수 타입을 추론
+ */
+let mySearch2: SearchFunc;
+mySearch2 = function(src, sub) {
+    let result = src.search(sub);
+    return result > -1;
+}
 
 
 
 
 
+
+
+// # 인덱서블 타입
+/**
+ * 배열이나 Map 구조(혹은 dictionary 구조)의 타입을 인덱스로 정의할 수 있다.
+ * 인덱스 시그니처(인덱스 서명): 인덱싱 할 때 해당 반환 유형과 함께 객체를 인덱싱하는 데 사용할 수 있는 타입을 기술 
+ * 인덱스 시그니처는 문자열과 숫자를 지원
+ * 두 타입의 인덱서(indexer)를 모두 지원하는 것은 가능하지만, 숫자형 문자열로 인덱싱을 할 경우 주의할 것
+ */
+interface StringArray {
+    [index: number]: string;
+}
+
+let myArray: StringArray;
+myArray = ["Bob", "Fred"];
+
+let myStr: string = myArray[0];
+
+// 문자열 인덱스 시그니처는 반환 타입을 강제
+/**
+ * 문자열 인덱스 시그니처는 Dictionary 패턴 정의에 사용됨, 
+ * 이때 모든 프로퍼티들이 반환 타입과 일치하도록 강제
+ */
+interface NumberDictionary {
+    [index: string]: number;
+    length: number;    // 성공, length는 숫자입니다
+    // name: string;      // 오류, `name`의 타입은 인덱서의 하위타입이 아닙니다
+}
+
+// 인덱스 시그니처가 프로퍼티 타입들의 합집합이라면 다른 타입의 프로퍼티들도 허용
+interface NumberOrStringDictionary {
+    [index: string]: number | string;
+    length: number;    // 성공, length는 숫자입니다
+    name: string;      // 성공, name은 문자열입니다
+}
+
+// 인덱싱한 값에 할당을 막기 위해 인덱스 시그니처를 읽기 전용으로 만들 수 있습니다:
+interface ReadonlyStringArray {
+    readonly [index: number]: string;
+}
+let myArray1: ReadonlyStringArray = ["Alice", "Bob"];
+// myArray1[2] = "Mallory"; // 오류!
+
+
+
+
+
+
+
+
+
+// # 클래스 타입
+
+
+
+// 
