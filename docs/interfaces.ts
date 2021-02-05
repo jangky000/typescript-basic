@@ -295,13 +295,13 @@ class Clock implements ClockInterface {
 
 /**
  * 클래스는 두 가지 타입을 가짐: 1. Static 타입, 2. instance 타입
- * 생성 시그니처 (construct signature)로 인터페이스를 생성하고, 클래스를 생성하려고 한다면, 
+ * 생성자 시그니처 (construct signature)로 인터페이스를 생성하고, 클래스를 생성하려고 한다면, 
  * 인터페이스를 implements 할 때, 에러가 발생
- * 클래스가 인터페이스를 implements 할 때, 클래스의 인스턴스만 검사하기 때문
- * 생성자가 스태틱이기 때문에, 이 검사에 포함되지 않음
+ * 클래스가 인터페이스를 implements 할 때, 클래스의 instance만 검사하기 때문
+ * 생성자(constructor)는 Static**이기 때문에, 이 검사에 포함되지 않음
  */
 
-// interface ClockConstructor1 {
+// interface ClockConstructor1 { // -> 생성자(constructor)를 정의하는 인터페이스
 //     new (hour: number, minute: number);
 // }
 
@@ -312,7 +312,7 @@ class Clock implements ClockInterface {
 
 /**
  * 해결 방법1
- * 클래스의 스태틱 부분을 직접적으로 다룸
+ * 클래스의 Staic 부분(생성자, constructor)을 직접적으로 다룸
  * ClockConstructor 인터페이스는 생성자를 정의
  * ClockInterface 인터페이스는 인스턴스 메서드를 정의
  * 편의를 위해, 전달된 타입의 인스턴스를 생성하는 createClock 생성자 함수를 정의
@@ -347,7 +347,8 @@ let analog = createClock2(AnalogClock2, 7, 32);
 
 /**
  * 해결 방법2
- * 클래스 표현을 사용
+ * 클래스 표현식을 사용
+ * const ... = class ... {}
  */
 
 interface ClockConstructor3 {
@@ -367,4 +368,12 @@ interface ClockConstructor3 {
 
 
 
-// 
+
+
+  
+
+
+
+
+
+// # 인터페이스 확장하기
