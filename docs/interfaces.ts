@@ -270,6 +270,101 @@ let myArray1: ReadonlyStringArray = ["Alice", "Bob"];
 
 // # 클래스 타입
 
+/**
+ * 가장 일반적인 방법
+ * C#이나 Java의 인터페이스처럼 메서드를 인터페이스 안에서도 기술할 수 있음
+ * implements를 상속 받아 클래스를 생성할 수 있음
+ * 인터페이스는 public과 private 모두를 기술하기보다, public을 기술함
+ * 클래스 인스턴스의 private에서는 특정 타입이 있는지 검사할 수 없음
+ */
+
+interface ClockInterface {
+    currentTime: Date;
+    setTime(d: Date): void;
+}
+
+class Clock implements ClockInterface {
+    currentTime: Date = new Date();
+    setTime(d: Date) {
+        this.currentTime = d;
+    }
+    constructor(h: number, m: number) { }
+}
+
+// 클래스의 스태틱과 인스턴스의 차이점
+
+/**
+ * 클래스는 두 가지 타입을 가짐: 1. Static 타입, 2. instance 타입
+ * 생성 시그니처 (construct signature)로 인터페이스를 생성하고, 클래스를 생성하려고 한다면, 
+ * 인터페이스를 implements 할 때, 에러가 발생
+ * 클래스가 인터페이스를 implements 할 때, 클래스의 인스턴스만 검사하기 때문
+ * 생성자가 스태틱이기 때문에, 이 검사에 포함되지 않음
+ */
+
+// interface ClockConstructor1 {
+//     new (hour: number, minute: number);
+// }
+
+// class Clock1 implements ClockConstructor1 { // -> Clock1 에러, Type 'Clock1' provides no match for the signature 'new (hour: number, minute: number): any'.ts(2420)
+//     currentTime: Date;
+//     constructor(h: number, m: number) { }
+// }
+
+/**
+ * 해결 방법1
+ * 클래스의 스태틱 부분을 직접적으로 다룸
+ * ClockConstructor 인터페이스는 생성자를 정의
+ * ClockInterface 인터페이스는 인스턴스 메서드를 정의
+ * 편의를 위해, 전달된 타입의 인스턴스를 생성하는 createClock 생성자 함수를 정의
+ */
+
+interface ClockConstructor2 {
+    new (hour: number, minute: number): ClockInterface2;
+}
+interface ClockInterface2 {
+    tick(): void;
+}
+
+function createClock2(ctor: ClockConstructor2, hour: number, minute: number): ClockInterface2 {
+    return new ctor(hour, minute);
+}
+
+class DigitalClock2 implements ClockInterface2 {
+    constructor(h: number, m: number) { }
+    tick() {
+        console.log("beep beep");
+    }
+}
+class AnalogClock2 implements ClockInterface2 {
+    constructor(h: number, m: number) { }
+    tick() {
+        console.log("tick tock");
+    }
+}
+
+let digital = createClock2(DigitalClock2, 12, 17);
+let analog = createClock2(AnalogClock2, 7, 32);
+
+/**
+ * 해결 방법2
+ * 클래스 표현을 사용
+ */
+
+interface ClockConstructor3 {
+    new (hour: number, minute: number);
+  }
+  
+  interface ClockInterface3 {
+    tick();
+  }
+  
+  const Clock3: ClockConstructor3 = class Clock3 implements ClockInterface3 {
+    constructor(h: number, m: number) {}
+    tick() {
+        console.log("beep beep");
+    }
+  }
+
 
 
 // 
