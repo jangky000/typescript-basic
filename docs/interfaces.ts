@@ -377,3 +377,91 @@ interface ClockConstructor3 {
 
 
 // # 인터페이스 확장하기
+
+/**
+ * 클래스처럼, 인터페이스들도 확장(extend)이 가능
+ * 인터페이스를 상속 받은 인터페이스
+ * 인터페이스를 재사용성 높은 컴포넌트로 쪼갤 때, 유연함을 제공
+ * 인터페이스는 여러 인터페이스를 확장할 수 있어, 모든 인터페이스의 조합을 만들어낼 수 있습니다.(다중 상속 가능)
+ */
+interface Shape {
+    color: string;
+}
+
+interface PenStroke {
+    penWidth: number;
+}
+
+interface Square extends Shape, PenStroke {
+    sideLength: number;
+}
+
+let square = {} as Square;
+square.color = "blue";
+square.sideLength = 10;
+square.penWidth = 5.0;
+
+
+
+
+
+// # 하이브리드 타입
+/**
+ * jQuery의 $과 같이 호출 가능한(callable) 동시에 추가적으로 여러 속성을 갖는 객체
+ * 이런 객체의 타입을 표현하기 위해서 호출 시그니쳐와 속성 타입 정의를 동시에 적을 수 있음
+ * 써드파티 (3rd-party) JavaScript와 상호작용할 때, 
+ * 타입의 형태를 완전히 기술하기 위해 위와 같은 패턴을 사용해야할 수도 있음
+ */
+
+interface Counter {
+    (start: number): string;
+    interval: number;
+    reset(): void;
+}
+
+function getCounter(): Counter {
+    let counter = (function (start: number) { }) as Counter;
+    counter.interval = 123;
+    counter.reset = function () { };
+    return counter;
+}
+
+let c1 = getCounter();
+c1(10);
+c1.reset();
+c1.interval = 5.0;
+
+
+
+
+
+// # 클래스를 확장한 인터페이스
+/**
+ * 인터페이스가 기존에 존재하는 클래스의 형태를 확장하는 것 또한 가능
+ * 인터페이스는 기초 클래스의 private과 protected 멤버도 상속받음
+ * 이것은 인터페이스가 private 혹은 protected 멤버를 포함한 클래스를 확장할 수 있다는 뜻이고, 
+ * 인터페이스 타입은 그 클래스나 하위클래스에 의해서만 구현될 수 있음
+ */
+
+class Control {
+    private state: any;
+}
+
+interface SelectableControl extends Control {
+    select(): void;
+}
+
+class Button extends Control implements SelectableControl {
+    select() { }
+}
+
+class TextBox extends Control {
+    select() { }
+}
+
+// Control 클래스 자신이나 자식이 아닌 클래스로 SelectableControl 인터페이스를 구현할 수 없다.
+// Error: Property 'state' is missing in type 'Image'.
+class Image1 implements SelectableControl {
+    private state: any; // private state를 이런 방법으로 선언할 수 없음
+    select() { }
+}
